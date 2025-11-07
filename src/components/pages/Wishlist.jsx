@@ -60,8 +60,8 @@ function Wishlist() {
     }
   };
 
-  const handleViewProduct = (productId) => {
-    navigate(`/products/${productId}`);
+const handleViewProduct = (productId) => {
+    navigate(`/product/${productId}`);
   };
 
   if (loading) {
