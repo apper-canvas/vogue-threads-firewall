@@ -281,11 +281,11 @@ if (error) {
                         Clear Filters
                       </Button>
                     ) : (
-                      <Button onClick={() => navigate('/products')}>
+<Button onClick={() => navigate('/products')}>
                         Start Shopping
                       </Button>
                     )
-}
+                  }
                 />
               ) : (
                 <div className="space-y-4">
@@ -357,7 +357,7 @@ if (error) {
               </div>
             </div>
           </div>
-        </div>
+</div>
       </div>
       
       {showOrderDetails && selectedOrder && (
