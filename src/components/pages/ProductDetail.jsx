@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { wishlistService } from "@/services/api/wishlistService";
+import { toast } from "react-toastify";
+import productsService from "@/services/api/productsService";
+import cartService from "@/services/api/cartService";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 import Select from "@/components/atoms/Select";
 import Badge from "@/components/atoms/Badge";
+import Products from "@/components/pages/Products";
 import ProductCard from "@/components/molecules/ProductCard";
-import Loading from "@/components/ui/Loading";
 import Error from "@/components/ui/Error";
-import productsService from "@/services/api/productsService";
-import cartService from "@/services/api/cartService";
-import { toast } from "react-toastify";
-
+import Loading from "@/components/ui/Loading";
+import { cn } from "@/utils/cn";
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -19,11 +21,12 @@ const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
-  const [quantity, setQuantity] = useState(1);
+const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  useEffect(() => {
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+useEffect(() => {
     loadProduct();
   }, [id]);
 
@@ -32,9 +35,19 @@ const ProductDetail = () => {
       setSelectedSize(product.sizes[0] || "");
       setSelectedColor(product.colors[0] || "");
       loadRelatedProducts();
+      checkWishlistStatus();
     }
   }, [product]);
 
+  const checkWishlistStatus = async () => {
+    if (!product) return;
+    try {
+      const inWishlist = await wishlistService.isInWishlist(product.Id);
+      setIsInWishlist(inWishlist);
+    } catch (error) {
+      console.error('Error checking wishlist status:', error);
+    }
+  };
   const loadProduct = async () => {
     try {
       setLoading(true);
@@ -55,7 +68,7 @@ const ProductDetail = () => {
     }
   };
 
-  const loadRelatedProducts = async () => {
+const loadRelatedProducts = async () => {
     try {
       const result = await productsService.getRelated(id, 4);
       if (result.success) {
@@ -63,6 +76,27 @@ const ProductDetail = () => {
       }
     } catch (error) {
       console.error("Error loading related products:", error);
+    }
+  };
+
+  const handleWishlistToggle = async () => {
+    if (!product || wishlistLoading) return;
+
+    setWishlistLoading(true);
+    try {
+      if (isInWishlist) {
+        await wishlistService.remove(product.Id);
+        setIsInWishlist(false);
+        toast.success('Removed from wishlist');
+      } else {
+        await wishlistService.add(product.Id);
+        setIsInWishlist(true);
+        toast.success('Added to wishlist');
+      }
+    } catch (error) {
+      toast.error('Failed to update wishlist');
+    } finally {
+      setWishlistLoading(false);
     }
   };
 
@@ -325,15 +359,34 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* Add to Cart */}
-            <Button
-              onClick={handleAddToCart}
-              className="w-full py-4 text-lg bg-gradient-to-r from-accent to-yellow-500 hover:from-yellow-500 hover:to-accent transform hover:scale-105 transition-all duration-200"
-            >
-              <ApperIcon name="ShoppingBag" className="w-5 h-5 mr-2" />
-              Add to Cart - ${(product.price * quantity).toFixed(2)}
-            </Button>
-
+{/* Action Buttons */}
+            <div className="flex space-x-3">
+              <Button
+                onClick={handleWishlistToggle}
+                disabled={wishlistLoading}
+                variant="outline"
+                className="flex items-center justify-center px-4 py-4 border-2 hover:scale-105 transition-all duration-200 disabled:opacity-50"
+              >
+                <ApperIcon 
+                  name="Heart" 
+                  size={20} 
+                  className={cn(
+                    "transition-colors duration-200",
+                    isInWishlist 
+                      ? "text-red-500 fill-red-500" 
+                      : "text-gray-600 hover:text-red-500"
+                  )} 
+                />
+              </Button>
+              
+              <Button
+                onClick={handleAddToCart}
+                className="flex-1 py-4 text-lg bg-gradient-to-r from-accent to-yellow-500 hover:from-yellow-500 hover:to-accent transform hover:scale-105 transition-all duration-200"
+              >
+                <ApperIcon name="ShoppingBag" className="w-5 h-5 mr-2" />
+                Add to Cart - ${(product.price * quantity).toFixed(2)}
+              </Button>
+            </div>
             {/* Product Details */}
             <div className="border-t pt-6 space-y-4">
               <div className="flex items-center justify-between">

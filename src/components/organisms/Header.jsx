@@ -2,21 +2,32 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import productsService from "@/services/api/productsService";
 import cartService from "@/services/api/cartService";
+import { wishlistService } from "@/services/api/wishlistService";
 import ApperIcon from "@/components/ApperIcon";
 import CartIcon from "@/components/molecules/CartIcon";
 import CategoryDropdown from "@/components/molecules/CategoryDropdown";
 import SearchBar from "@/components/molecules/SearchBar";
-
 const Header = ({ onCartClick }) => {
   const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
   const [categories, setCategories] = useState([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     loadCartCount();
+    loadWishlistCount();
     loadCategories();
   }, []);
+
+  const loadWishlistCount = async () => {
+    try {
+      const count = await wishlistService.getCount();
+      setWishlistCount(count);
+    } catch (error) {
+      console.error("Error loading wishlist count:", error);
+    }
+  };
 
   const loadCartCount = async () => {
     try {
@@ -96,7 +107,7 @@ const Header = ({ onCartClick }) => {
               <SearchBar onSearch={handleSearch} />
             </div>
 {/* Right Section */}
-            <div className="flex items-center space-x-4">
+<div className="flex items-center space-x-4">
               {/* User Profile Link */}
               <Link
                 to="/profile"
@@ -105,8 +116,20 @@ const Header = ({ onCartClick }) => {
                 <ApperIcon name="User" className="w-4 h-4" />
               </Link>
               
-              <CartIcon count={cartCount} onClick={handleCartClick} />
+              {/* Wishlist Link */}
+              <Link
+                to="/wishlist"
+                className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-primary hover:text-accent transition-colors duration-200 relative"
+              >
+                <ApperIcon name="Heart" className="w-4 h-4" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
               
+              <CartIcon count={cartCount} onClick={handleCartClick} />
               {/* Mobile Menu Button */}
               {/* Mobile Menu Button */}
               <button
@@ -153,6 +176,14 @@ const Header = ({ onCartClick }) => {
                 >
                   <ApperIcon name="User" className="w-4 h-4" />
                   <span>My Profile</span>
+                </Link>
+                <Link
+                  to="/wishlist"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-accent py-2 transition-colors duration-200"
+                >
+                  <ApperIcon name="Heart" className="w-4 h-4" />
+                  <span>My Wishlist ({wishlistCount})</span>
                 </Link>
                 {navigation.map((item) => (
                   <Link

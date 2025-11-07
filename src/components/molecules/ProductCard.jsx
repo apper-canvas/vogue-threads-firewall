@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { wishlistService } from "@/services/api/wishlistService";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
 import Badge from "@/components/atoms/Badge";
@@ -7,6 +9,21 @@ import { cn } from "@/utils/cn";
 
 const ProductCard = ({ product, onAddToCart, className = "" }) => {
   const navigate = useNavigate();
+  const [isInWishlist, setIsInWishlist] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
+  useEffect(() => {
+    checkWishlistStatus();
+  }, [product.Id]);
+
+  const checkWishlistStatus = async () => {
+    try {
+      const inWishlist = await wishlistService.isInWishlist(product.Id);
+      setIsInWishlist(inWishlist);
+    } catch (error) {
+      console.error('Error checking wishlist status:', error);
+    }
+  };
 
   const handleProductClick = () => {
     navigate(`/product/${product.Id}`);
@@ -15,6 +32,28 @@ const ProductCard = ({ product, onAddToCart, className = "" }) => {
   const handleAddToCart = (e) => {
     e.stopPropagation();
     onAddToCart(product);
+  };
+
+  const handleWishlistToggle = async (e) => {
+    e.stopPropagation();
+    if (wishlistLoading) return;
+
+    setWishlistLoading(true);
+    try {
+      if (isInWishlist) {
+        await wishlistService.remove(product.Id);
+        setIsInWishlist(false);
+        toast.success('Removed from wishlist');
+      } else {
+        await wishlistService.add(product.Id);
+        setIsInWishlist(true);
+        toast.success('Added to wishlist');
+      }
+    } catch (error) {
+      toast.error('Failed to update wishlist');
+    } finally {
+      setWishlistLoading(false);
+    }
   };
 
   return (
@@ -27,7 +66,7 @@ const ProductCard = ({ product, onAddToCart, className = "" }) => {
       )}
       onClick={handleProductClick}
     >
-      <div className="relative overflow-hidden">
+<div className="relative overflow-hidden">
         <img
           src={product.images[0]}
           alt={product.name}
@@ -42,6 +81,24 @@ const ProductCard = ({ product, onAddToCart, className = "" }) => {
             Featured
           </Badge>
         )}
+
+        {/* Wishlist button */}
+        <button
+          onClick={handleWishlistToggle}
+          disabled={wishlistLoading}
+          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-all duration-200 disabled:opacity-50"
+        >
+          <ApperIcon 
+            name="Heart" 
+            size={18} 
+            className={cn(
+              "transition-colors duration-200",
+              isInWishlist 
+                ? "text-red-500 fill-red-500" 
+                : "text-gray-600 hover:text-red-500"
+            )} 
+          />
+        </button>
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
