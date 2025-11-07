@@ -154,11 +154,23 @@ const UserProfile = () => {
                   <ApperIcon name="Package" className="w-4 h-4 inline mr-2" />
                   Order History
                 </button>
-                <button className="w-full text-left px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+<button 
+                  onClick={() => {
+                    navigate('/account-settings');
+                    toast.info('Navigating to Account Settings');
+                  }}
+                  className="w-full text-left px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                >
                   <ApperIcon name="Settings" className="w-4 h-4 inline mr-2" />
                   Account Settings
                 </button>
-                <button className="w-full text-left px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+                <button 
+                  onClick={() => {
+                    navigate('/wishlist');
+                    toast.info('Navigating to Wishlist');
+                  }}
+                  className="w-full text-left px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                >
                   <ApperIcon name="Heart" className="w-4 h-4 inline mr-2" />
                   Wishlist
                 </button>
