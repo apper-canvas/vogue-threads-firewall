@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import ApperIcon from "@/components/ApperIcon";
-import SearchBar from "@/components/molecules/SearchBar";
-import CategoryDropdown from "@/components/molecules/CategoryDropdown";
-import CartIcon from "@/components/molecules/CartIcon";
-import cartService from "@/services/api/cartService";
 import productsService from "@/services/api/productsService";
+import cartService from "@/services/api/cartService";
+import ApperIcon from "@/components/ApperIcon";
+import CartIcon from "@/components/molecules/CartIcon";
+import CategoryDropdown from "@/components/molecules/CategoryDropdown";
+import SearchBar from "@/components/molecules/SearchBar";
 
 const Header = ({ onCartClick }) => {
   const [cartCount, setCartCount] = useState(0);
@@ -95,11 +95,19 @@ const Header = ({ onCartClick }) => {
             <div className="hidden lg:block flex-1 max-w-md mx-8">
               <SearchBar onSearch={handleSearch} />
             </div>
-
-            {/* Right Section */}
+{/* Right Section */}
             <div className="flex items-center space-x-4">
+              {/* User Profile Link */}
+              <Link
+                to="/profile"
+                className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-primary hover:text-accent transition-colors duration-200"
+              >
+                <ApperIcon name="User" className="w-4 h-4" />
+              </Link>
+              
               <CartIcon count={cartCount} onClick={handleCartClick} />
               
+              {/* Mobile Menu Button */}
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -137,8 +145,15 @@ const Header = ({ onCartClick }) => {
                   </Link>
                 ))}
               </div>
-
-              <div className="border-t border-gray-200 pt-4 space-y-2">
+<div className="border-t border-gray-200 pt-4 space-y-2">
+                <Link
+                  to="/profile"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-accent py-2 transition-colors duration-200"
+                >
+                  <ApperIcon name="User" className="w-4 h-4" />
+                  <span>My Profile</span>
+                </Link>
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
@@ -148,7 +163,7 @@ const Header = ({ onCartClick }) => {
                   >
                     {item.name}
                   </Link>
-                ))}
+))}
               </div>
             </nav>
           </div>
