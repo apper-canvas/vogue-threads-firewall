@@ -157,7 +157,7 @@ const getStatusIcon = (status) => {
       <div className="container mx-auto px-4 py-8">
         <Error message={error} onRetry={loadOrders} />
       </div>
-    );
+);
   }
 
   return (
@@ -179,7 +179,7 @@ const getStatusIcon = (status) => {
               </div>
               <div>
                 <h3 className="font-semibold text-primary">John Doe</h3>
-<p className="text-gray-500 text-sm">john@example.com</p>
+                <p className="text-gray-500 text-sm">john@example.com</p>
               </div>
             </div>
 
@@ -212,7 +212,7 @@ const getStatusIcon = (status) => {
               >
                 <ApperIcon name="Heart" className="w-4 h-4 inline mr-2" />
                 Wishlist
-</button>
+              </button>
             </nav>
           </div>
         </div>
@@ -262,7 +262,7 @@ const getStatusIcon = (status) => {
             {/* Orders List */}
             <div className="p-6">
               {filteredOrders.length === 0 ? (
-<Empty
+                <Empty
                   icon="Package"
                   title="No orders found"
                   description={searchQuery || statusFilter !== 'all' 
@@ -288,7 +288,7 @@ const getStatusIcon = (status) => {
                   }
                 />
               ) : (
-<div className="space-y-4">
+                <div className="space-y-4">
                   {filteredOrders.map((order) => (
                       <div
                         key={order.Id}
