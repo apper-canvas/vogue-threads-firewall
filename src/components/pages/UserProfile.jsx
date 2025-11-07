@@ -204,9 +204,9 @@ if (error) {
                 My Orders
               </button>
               <button 
-                onClick={() => {
+onClick={() => {
                   navigate('/wishlist');
-                  toast.info('Navigating to Wishlist');
+                  toast.info('Wishlist feature coming soon!');
                 }}
                 className="w-full text-left px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
               >
