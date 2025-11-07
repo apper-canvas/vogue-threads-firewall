@@ -1,29 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import ApperIcon from '@/components/ApperIcon';
-import Button from '@/components/atoms/Button';
-import Input from '@/components/atoms/Input';
-import Select from '@/components/atoms/Select';
-import Badge from '@/components/atoms/Badge';
-import Loading from '@/components/ui/Loading';
-import Error from '@/components/ui/Error';
-import Empty from '@/components/ui/Empty';
-import orderService from '@/services/api/orderService';
-import { toast } from 'react-toastify';
-import { format } from 'date-fns';
-import { cn } from '@/utils/cn';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { format } from "date-fns";
+import orderService from "@/services/api/orderService";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import Input from "@/components/atoms/Input";
+import Select from "@/components/atoms/Select";
+import Badge from "@/components/atoms/Badge";
+import Error from "@/components/ui/Error";
+import Empty from "@/components/ui/Empty";
+import Loading from "@/components/ui/Loading";
+import { cn } from "@/utils/cn";
 
 const UserProfile = () => {
-  const [orders, setOrders] = useState([]);
-  const [filteredOrders, setFilteredOrders] = useState([]);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('');
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [filteredOrders, setFilteredOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [trackingDetails, setTrackingDetails] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     loadOrders();
@@ -53,7 +54,7 @@ const UserProfile = () => {
     }
   };
 
-  const filterOrders = () => {
+const filterOrders = () => {
     let filtered = [...orders];
 
     // Filter by status
@@ -65,14 +66,40 @@ const UserProfile = () => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(order =>
-        order.orderNumber.toLowerCase().includes(query) ||
-        order.items.some(item => item.name.toLowerCase().includes(query))
+        order.orderNumber?.toLowerCase().includes(query) ||
+        order.items?.some(item => item.name?.toLowerCase().includes(query))
       );
+    }
+
+    // Filter by date
+    if (dateFilter) {
+      const now = new Date();
+      const filterDate = new Date();
+      
+      switch (dateFilter) {
+        case '30days':
+          filterDate.setDate(now.getDate() - 30);
+          break;
+        case '3months':
+          filterDate.setMonth(now.getMonth() - 3);
+          break;
+        case '6months':
+          filterDate.setMonth(now.getMonth() - 6);
+          break;
+        case '1year':
+          filterDate.setFullYear(now.getFullYear() - 1);
+          break;
+        default:
+          break;
+      }
+      
+      if (dateFilter !== '') {
+        filtered = filtered.filter(order => new Date(order.orderDate) >= filterDate);
+      }
     }
 
     setFilteredOrders(filtered);
   };
-
   const handleOrderClick = async (order) => {
     setSelectedOrder(order);
     setShowOrderDetails(true);
@@ -106,140 +133,163 @@ const UserProfile = () => {
     );
   };
 
-  const getStatusIcon = (status) => {
+const getStatusIcon = (status) => {
     const icons = {
       processing: 'Clock',
       confirmed: 'CheckCircle',
       shipped: 'Truck',
       delivered: 'Package',
-      cancelled: 'XCircle'
+      cancelled: 'X'
     };
-    return icons[status] || 'Clock';
+    return icons[status] || icons.processing;
   };
 
   if (loading) {
-    return <Loading />;
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Loading />
+      </div>
+    );
   }
 
   if (error) {
-    return <Error message={error} onRetry={loadOrders} />;
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Error message={error} onRetry={loadOrders} />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-primary mb-2">My Profile</h1>
-          <p className="text-gray-600">Manage your orders and account information</p>
+    <div className="container mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-display font-bold text-primary mb-2">My Profile</h1>
+        <p className="text-gray-600">Manage your orders and account information</p>
+      </div>
+
+      {/* Profile Sections */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Sidebar */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center space-x-4 mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-accent to-yellow-500 rounded-full flex items-center justify-center">
+                <ApperIcon name="User" className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-primary">John Doe</h3>
+<p className="text-gray-500 text-sm">john@example.com</p>
+              </div>
+            </div>
+
+            <nav className="space-y-2">
+              <button 
+                onClick={() => {
+                  toast.info('Profile settings coming soon!');
+                }}
+                className="w-full text-left px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <ApperIcon name="Settings" className="w-4 h-4 inline mr-2" />
+                Settings
+              </button>
+              <button 
+                onClick={() => {
+                  navigate('/orders');
+                  toast.info('Navigating to Orders');
+                }}
+                className="w-full text-left px-4 py-2 rounded-lg bg-accent text-white font-medium"
+              >
+                <ApperIcon name="Package" className="w-4 h-4 inline mr-2" />
+                My Orders
+              </button>
+              <button 
+                onClick={() => {
+                  navigate('/wishlist');
+                  toast.info('Navigating to Wishlist');
+                }}
+                className="w-full text-left px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <ApperIcon name="Heart" className="w-4 h-4 inline mr-2" />
+                Wishlist
+</button>
+            </nav>
+          </div>
         </div>
 
-        {/* Profile Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-accent to-yellow-500 rounded-full flex items-center justify-center">
-                  <ApperIcon name="User" className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-primary">John Doe</h3>
-                  <p className="text-gray-600 text-sm">john.doe@example.com</p>
-                </div>
-              </div>
-              
-              <nav className="space-y-2">
-                <button className="w-full text-left px-4 py-2 rounded-lg bg-accent/10 text-accent font-medium">
-                  <ApperIcon name="Package" className="w-4 h-4 inline mr-2" />
-                  Order History
-                </button>
-<button 
-                  onClick={() => {
-                    navigate('/account-settings');
-                    toast.info('Navigating to Account Settings');
-                  }}
-                  className="w-full text-left px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  <ApperIcon name="Settings" className="w-4 h-4 inline mr-2" />
-                  Account Settings
-                </button>
-                <button 
-                  onClick={() => {
-                    navigate('/wishlist');
-                    toast.info('Navigating to Wishlist');
-                  }}
-                  className="w-full text-left px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  <ApperIcon name="Heart" className="w-4 h-4 inline mr-2" />
-                  Wishlist
-                </button>
-              </nav>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              {/* Orders Header */}
-              <div className="border-b border-gray-200 p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <h2 className="text-xl font-semibold text-primary">Order History</h2>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Input
-                      placeholder="Search orders..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full sm:w-64"
-                      icon={<ApperIcon name="Search" className="w-4 h-4" />}
-                    />
-                    <Select
-                      value={statusFilter}
-                      onValueChange={setStatusFilter}
-                      className="w-full sm:w-40"
-                    >
-                      <option value="all">All Orders</option>
-                      <option value="processing">Processing</option>
-                      <option value="confirmed">Confirmed</option>
-                      <option value="shipped">Shipped</option>
-                      <option value="delivered">Delivered</option>
-                      <option value="cancelled">Cancelled</option>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Orders List */}
-              <div className="p-6">
-                {filteredOrders.length === 0 ? (
-                  <Empty
-                    icon="Package"
-                    title="No orders found"
-                    description={searchQuery || statusFilter !== 'all' 
-                      ? "No orders match your current filters" 
-                      : "You haven't placed any orders yet"
-                    }
-                    action={
-                      searchQuery || statusFilter !== 'all' ? (
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setSearchQuery('');
-                            setStatusFilter('all');
-                          }}
-                        >
-                          Clear Filters
-                        </Button>
-                      ) : (
-                        <Button onClick={() => navigate('/products')}>
-                          Start Shopping
-                        </Button>
-                      )
-                    }
+        {/* Main Content */}
+        <div className="lg:col-span-3">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            {/* Orders Header */}
+            <div className="border-b border-gray-200 p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h2 className="text-xl font-semibold text-primary">Order History</h2>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Input
+                    type="text"
+                    placeholder="Search orders..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full sm:w-64"
                   />
-                ) : (
-                  <div className="space-y-4">
-                    {filteredOrders.map((order) => (
+                  <Select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full sm:w-40"
+                  >
+                    <option value="all">All Orders</option>
+                    <option value="processing">Processing</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                  </Select>
+                  <Select
+                    value={dateFilter}
+                    onChange={(e) => setDateFilter(e.target.value)}
+                    className="w-full sm:w-40"
+                  >
+                    <option value="">All Time</option>
+                    <option value="30days">Last 30 Days</option>
+                    <option value="3months">Last 3 Months</option>
+                    <option value="6months">Last 6 Months</option>
+                    <option value="1year">Last Year</option>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Orders List */}
+            <div className="p-6">
+              {filteredOrders.length === 0 ? (
+<Empty
+                  icon="Package"
+                  title="No orders found"
+                  description={searchQuery || statusFilter !== 'all' 
+                    ? "No orders match your current filters" 
+                    : "You haven't placed any orders yet"
+                  }
+                  action={
+                    searchQuery || statusFilter !== 'all' ? (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setSearchQuery('');
+                          setStatusFilter('all');
+                        }}
+                      >
+                        Clear Filters
+                      </Button>
+                    ) : (
+                      <Button onClick={() => navigate('/products')}>
+                        Start Shopping
+                      </Button>
+                    )
+                  }
+                />
+              ) : (
+<div className="space-y-4">
+                  {filteredOrders.map((order) => (
                       <div
                         key={order.Id}
                         className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
