@@ -6,7 +6,7 @@ import Button from '@/components/atoms/Button';
 import Loading from '@/components/ui/Loading';
 import Empty from '@/components/ui/Empty';
 import { wishlistService } from '@/services/api/wishlistService';
-import { productsService } from '@/services/api/productsService';
+import productsService from '@/services/api/productsService';
 
 function Wishlist() {
   const navigate = useNavigate();
@@ -29,13 +29,16 @@ function Wishlist() {
         setProducts([]);
         setLoading(false);
         return;
-      }
+}
 
-      const allProducts = await productsService.getAll();
-      const wishlistProducts = allProducts.filter(product => 
+      const productsResponse = await productsService.getAll();
+      if (!productsResponse.success) {
+        throw new Error('Failed to fetch products');
+      }
+      
+      const wishlistProducts = productsResponse.data.filter(product => 
         wishlistIds.includes(product.Id)
       );
-      
       setWishlistItems(wishlistIds);
       setProducts(wishlistProducts);
     } catch (err) {
