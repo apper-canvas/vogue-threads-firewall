@@ -152,12 +152,12 @@ const getStatusIcon = (status) => {
     );
   }
 
-  if (error) {
+if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Error message={error} onRetry={loadOrders} />
       </div>
-);
+    );
   }
 
   return (
@@ -285,9 +285,9 @@ const getStatusIcon = (status) => {
                         Start Shopping
                       </Button>
                     )
-                  }
+}
                 />
-) : (
+              ) : (
                 <div className="space-y-4">
                   {filteredOrders.map((order) => (
                       <div
