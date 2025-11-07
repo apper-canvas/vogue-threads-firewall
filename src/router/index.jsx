@@ -9,8 +9,8 @@ const ProductDetail = lazy(() => import("@/components/pages/ProductDetail"));
 const Checkout = lazy(() => import("@/components/pages/Checkout"));
 const OrderConfirmation = lazy(() => import("@/components/pages/OrderConfirmation"));
 const UserProfile = lazy(() => import("@/components/pages/UserProfile"));
+const Wishlist = lazy(() => import("@/components/pages/Wishlist"));
 const NotFound = lazy(() => import("@/components/pages/NotFound"));
-
 // Loading component for Suspense fallback
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -74,11 +74,11 @@ const mainRoutes = [
       </Suspense>
     )
 },
-  {
+{
     path: "wishlist",
     element: (
       <Suspense fallback={<PageLoader />}>
-        <NotFound />
+        <Wishlist />
       </Suspense>
     )
   },
